@@ -9,8 +9,11 @@
 #ifndef EMSCRIPTEN_NO_ERRNO
 #include <errno.h>
 #endif
+#include <limits.h>
 #include <stddef.h>
+#include <stdlib.h>
 #include <stdint.h>
+#include <stdio.h>
 
 #define WASM_PAGE_SIZE 65536
 
@@ -25,6 +28,17 @@ extern size_t emscripten_get_heap_size(void);
 #ifdef __cplusplus
 }
 #endif
+
+#ifndef EMSCRIPTEN_NO_ERRNO
+#define SET_ERRNO() { errno = ENOMEM; }
+#else
+#define SET_ERRNO()
+#endif
+
+#define RETURN_ERROR() { \
+  SET_ERRNO()            \
+  return (void*)-1;      \
+}
 
 void *sbrk(intptr_t increment) {
 #if __EMSCRIPTEN_PTHREADS__
@@ -41,8 +55,17 @@ void *sbrk(intptr_t increment) {
 #else
     intptr_t old_brk = *sbrk_ptr;
 #endif
-    // TODO: overflow checks
     intptr_t new_brk = old_brk + increment;
+    // ArrayBuffers are currently limited in practice to 2GB, the size of a
+    // signed integer, because VMs do not properly support 4GB. They may not
+    // report an error when trying to allocate past that boundary, but later
+    // accessing the memory will fail on out of  bounds. So we need to guard
+    // against it here.
+    // TODO When 4GB support arrives, we'll want to add an option
+    //      to ignore this check there.
+    if ((uint32_t)new_brk > (uint32_t)INT_MAX) {
+      RETURN_ERROR();
+    }
 #ifdef __wasm__
     uintptr_t old_size = __builtin_wasm_memory_size(0) * WASM_PAGE_SIZE;
 #else
@@ -52,10 +75,7 @@ void *sbrk(intptr_t increment) {
       // Try to grow memory.
       intptr_t diff = new_brk - old_size;
       if (!emscripten_resize_heap(new_brk)) {
-#ifndef EMSCRIPTEN_NO_ERRNO
-        errno = ENOMEM;
-#endif
-        return (void*)-1;
+        RETURN_ERROR();
       }
     }
 #if __EMSCRIPTEN_PTHREADS__
@@ -81,6 +101,11 @@ void *sbrk(intptr_t increment) {
 }
 
 int brk(intptr_t ptr) {
+#if __EMSCRIPTEN_PTHREADS__
+  // FIXME
+  printf("brk() is not theadsafe yet, https://github.com/emscripten-core/emscripten/issues/10006");
+  abort();
+#endif
   intptr_t last = (intptr_t)sbrk(0);
   if (sbrk(ptr - last) == (void*)-1) {
     return -1;
