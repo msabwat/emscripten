@@ -2317,12 +2317,12 @@ def finalize_wasm(temp_files, infile, outfile, memfile, DEBUG):
   # the table. It must add the original versions of them, not legalized ones,
   # so that indirect calls have the right type, so export those.
   if shared.Settings.RELOCATABLE:
-    args.append('--pass-arg=legalize-js-interface-export-originals')
-  stdout = shared.Building.run_binaryen_command('wasm-emscripten-finalize',
-                                                infile=base_wasm,
-                                                outfile=wasm,
-                                                args=args,
-                                                stdout=subprocess.PIPE)
+    #args.append('--pass-arg=legalize-js-interface-export-originals')
+    stdout = shared.Building.run_binaryen_command('wasm-emscripten-finalize',
+                                                  infile=base_wasm,
+                                                  outfile=wasm,
+                                                  args=args,
+                                                  stdout=subprocess.PIPE)
   if write_source_map:
     shared.Building.save_intermediate(wasm + '.map', 'post_finalize.map')
   shared.Building.save_intermediate(wasm, 'post_finalize.wasm')

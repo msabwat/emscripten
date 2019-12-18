@@ -1463,16 +1463,16 @@ There is NO warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR P
         if shared.Settings.STACK_OVERFLOW_CHECK:
           shared.Settings.EXPORTED_RUNTIME_METHODS += ['writeStackCookie', 'checkStackCookie']
 
-      if shared.Settings.LINKABLE:
-        exit_with_error('-s LINKABLE=1 is not supported with -s USE_PTHREADS>0!')
-      if shared.Settings.SIDE_MODULE:
-        exit_with_error('-s SIDE_MODULE=1 is not supported with -s USE_PTHREADS>0!')
-      if shared.Settings.MAIN_MODULE:
-        exit_with_error('-s MAIN_MODULE=1 is not supported with -s USE_PTHREADS>0!')
-      if shared.Settings.EMTERPRETIFY:
-        exit_with_error('-s EMTERPRETIFY=1 is not supported with -s USE_PTHREADS>0!')
-      if shared.Settings.PROXY_TO_WORKER:
-        exit_with_error('--proxy-to-worker is not supported with -s USE_PTHREADS>0! Use the option -s PROXY_TO_PTHREAD=1 if you want to run the main thread of a multithreaded application in a web worker.')
+#      if shared.Settings.LINKABLE:
+#        exit_with_error('-s LINKABLE=1 is not supported with -s USE_PTHREADS>0!')
+#      if shared.Settings.SIDE_MODULE:
+#        exit_with_error('-s SIDE_MODULE=1 is not supported with -s USE_PTHREADS>0!')
+#      if shared.Settings.MAIN_MODULE:
+#        exit_with_error('-s MAIN_MODULE=1 is not supported with -s USE_PTHREADS>0!')
+#      if shared.Settings.EMTERPRETIFY:
+#        exit_with_error('-s EMTERPRETIFY=1 is not supported with -s USE_PTHREADS>0!')
+#      if shared.Settings.PROXY_TO_WORKER:
+#        exit_with_error('--proxy-to-worker is not supported with -s USE_PTHREADS>0! Use the option -s PROXY_TO_PTHREA#D=1 if you want to run the main thread of a multithreaded application in a web worker.')
     else:
       if shared.Settings.PROXY_TO_PTHREAD:
         exit_with_error('-s PROXY_TO_PTHREAD=1 requires -s USE_PTHREADS to work!')
@@ -1852,8 +1852,8 @@ There is NO warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR P
     if shared.Settings.STANDALONE_WASM:
       if not shared.Settings.WASM_BACKEND:
         exit_with_error('STANDALONE_WASM is only available in the upstream wasm backend path')
-      if shared.Settings.USE_PTHREADS:
-        exit_with_error('STANDALONE_WASM does not support pthreads yet')
+      #if shared.Settings.USE_PTHREADS:
+      #  exit_with_error('STANDALONE_WASM does not support pthreads yet')
       # the wasm must be runnable without the JS, so there cannot be anything that
       # requires JS legalization
       shared.Settings.LEGALIZE_JS_FFI = 0
@@ -3058,10 +3058,10 @@ def do_binaryen(target, asm_target, options, memfile, wasm_binary_target,
     if DEBUG:
       shared.Building.save_intermediate(wasm_binary_target, 'pre-byn.wasm')
     args = options.binaryen_passes
-    shared.Building.run_wasm_opt(wasm_binary_target,
-                                 wasm_binary_target,
-                                 args=args,
-                                 debug=intermediate_debug_info)
+  #shared.Building.run_wasm_opt(wasm_binary_target,
+   #                              wasm_binary_target,
+    #                             args=args,
+     #                            debug=intermediate_debug_info)
   if shared.Settings.BINARYEN_SCRIPTS:
     binaryen_scripts = os.path.join(shared.BINARYEN_ROOT, 'scripts')
     script_env = os.environ.copy()
